@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloom &amp; Balm — Australian skincare, honestly reviewed</title>
+  <meta name="description" content="Honest skincare reviews for Australian women. SPF, Korean beauty, moisturisers and routines tested for our climate.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js"></script>
+  <script src="components.js"></script>
+</head>
+<body class="page-wrap">
+
+  <div id="nav-mount"></div>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <span class="hero__eyebrow">Australian skincare journal</span>
+        <h1 class="hero__title">
+          Australian skincare,<br>
+          <em>honestly reviewed</em>
+        </h1>
+        <p class="hero__sub">The best products for our climate — SPF, Korean beauty, and everything in between.</p>
+        <div class="hero__cta">
+          <a href="blog/index.html" class="btn btn--primary">Start Here →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Latest posts -->
+    <section class="section">
+      <div class="container">
+        <div class="section__header">
+          <div>
+            <span class="section__eyebrow">Latest</span>
+            <h2 class="section__title">From the journal</h2>
+          </div>
+          <a href="blog/index.html" class="section__link">View all →</a>
+        </div>
+        <div class="post-grid" id="latest-posts">
+          <p style="color:var(--muted);font-size:.9rem;">Loading posts…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Category tiles -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <h2 class="section__title" style="text-align:center;margin-bottom:3rem;">Browse by category</h2>
+        <div class="cat-grid">
+          <a href="spf-guide.html" class="cat-tile">
+            <span class="cat-tile__icon">☀️</span>
+            <span class="cat-tile__label">SPF &amp; Sun Protection</span>
+          </a>
+          <a href="korean-beauty.html" class="cat-tile">
+            <span class="cat-tile__icon">✨</span>
+            <span class="cat-tile__label">Korean Beauty</span>
+          </a>
+          <a href="moisturisers.html" class="cat-tile">
+            <span class="cat-tile__icon">💧</span>
+            <span class="cat-tile__label">Moisturisers</span>
+          </a>
+          <a href="routines.html" class="cat-tile">
+            <span class="cat-tile__icon">🌿</span>
+            <span class="cat-tile__label">Skincare Routines</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="newsletter">
+          <h2 class="newsletter__title">Join Australians getting weekly skincare tips</h2>
+          <p class="newsletter__sub">One honest email each Sunday. Reviews, routines, and what I'm actually using. No spam.</p>
+          <form class="newsletter__form" onsubmit="handleNewsletter(event)">
+            <label for="nl-email" style="position:absolute;opacity:0;pointer-events:none">Email</label>
+            <input id="nl-email" class="newsletter__input" type="email" placeholder="your@email.com" required>
+            <button type="submit" class="newsletter__btn">Subscribe</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-mount"></div>
+
+  <script>
+    document.getElementById('nav-mount').innerHTML = renderNav('home');
+    document.getElementById('footer-mount').innerHTML = renderFooter();
+
+    // Render latest 3 posts
+    const posts = BB.getPublishedPosts().slice(0, 3);
+    const grid = document.getElementById('latest-posts');
+    if (posts.length === 0) {
+      grid.innerHTML = '<p style="color:var(--muted)">No posts yet. Check back soon.</p>';
+    } else {
+      grid.innerHTML = posts.map(renderPostCard).join('');
+    }
+
+    function handleNewsletter(e) {
+      e.preventDefault();
+      showToast('You\'re subscribed! ✓', 'success');
+      e.target.reset();
+    }
+  </script>
+</body>
+</html>

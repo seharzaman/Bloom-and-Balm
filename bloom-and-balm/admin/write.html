@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Write Post — Bloom &amp; Balm Admin</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="apple-touch-icon" href="../favicon.png">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../site.js"></script>
+</head>
+<body class="admin-body">
+
+  <!-- Topbar -->
+  <div class="admin-topbar">
+    <div class="admin-topbar__logo"><span>Bloom</span> &amp; Balm <span style="font-family:var(--sans);font-size:.75rem;color:rgba(255,255,255,.5);margin-left:.5rem;" id="mode-label">New post</span></div>
+    <div class="admin-topbar__right">
+      <a href="dashboard.html">← Dashboard</a>
+      <a href="../index.html" target="_blank">View site ↗</a>
+      <a href="#" onclick="logout()">Sign out</a>
+    </div>
+  </div>
+
+  <!-- Editor layout -->
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:1.5rem;max-width:1200px;margin:0 auto;padding:2rem 1.25rem;align-items:start;">
+
+    <!-- Left: main editor -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- Title -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;">
+        <input
+          id="post-title"
+          type="text"
+          placeholder="Post title…"
+          style="width:100%;font-family:var(--serif);font-size:1.8rem;border:none;outline:none;background:transparent;color:var(--fg);"
+          oninput="autoSlug()"
+        >
+      </div>
+
+      <!-- Rich text editor -->
+      <div class="editor-wrap">
+        <div class="editor-toolbar">
+          <button class="editor-btn" onclick="fmt('bold')" title="Bold"><strong>B</strong></button>
+          <button class="editor-btn" onclick="fmt('italic')" title="Italic"><em>I</em></button>
+          <button class="editor-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+          <div class="editor-sep"></div>
+          <button class="editor-btn" onclick="fmtBlock('h2')" title="Heading 2">H2</button>
+          <button class="editor-btn" onclick="fmtBlock('h3')" title="Heading 3">H3</button>
+          <button class="editor-btn" onclick="fmtBlock('p')" title="Paragraph">¶</button>
+          <div class="editor-sep"></div>
+          <button class="editor-btn" onclick="fmt('insertUnorderedList')" title="Bullet list">• List</button>
+          <button class="editor-btn" onclick="fmt('insertOrderedList')" title="Numbered list">1. List</button>
+          <div class="editor-sep"></div>
+          <button class="editor-btn" onclick="insertLink()" title="Insert link">🔗 Link</button>
+          <div class="editor-sep"></div>
+          <button class="editor-btn" onclick="fmt('removeFormat')" title="Clear format">✕ Clear</button>
+        </div>
+        <div
+          id="editor-content"
+          contenteditable="true"
+          data-placeholder="Start writing your post here… Use the toolbar above for formatting."
+          spellcheck="true"
+        ></div>
+      </div>
+
+      <!-- Excerpt -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;">
+        <label style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:.5rem;">Excerpt (shown in post cards)</label>
+        <textarea
+          id="post-excerpt"
+          rows="3"
+          placeholder="A short summary of the post — 1–2 sentences."
+          style="width:100%;border:none;outline:none;resize:vertical;font-family:var(--sans);font-size:.9rem;color:var(--fg);background:transparent;line-height:1.6;"
+        ></textarea>
+      </div>
+
+    </div>
+
+    <!-- Right: metadata sidebar -->
+    <div style="display:flex;flex-direction:column;gap:1rem;position:sticky;top:1rem;">
+
+      <!-- Publish actions -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;">
+        <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:1rem;">Publish</p>
+        <div style="display:flex;flex-direction:column;gap:.6rem;">
+          <button class="btn btn--primary" style="width:100%;justify-content:center;" onclick="savePost(true)">✓ Publish</button>
+          <button class="btn btn--outline" style="width:100%;justify-content:center;" onclick="savePost(false)">Save as draft</button>
+          <a href="dashboard.html" class="btn btn--outline" style="width:100%;justify-content:center;font-size:.8rem;padding:.5rem 1rem;">Discard</a>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;">
+        <label for="post-cat" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:.5rem;">Category</label>
+        <select id="post-cat" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.875rem;background:var(--bg);color:var(--fg);outline:none;">
+          <option value="">— Choose —</option>
+          <option>SPF &amp; Sun Protection</option>
+          <option>Korean Beauty</option>
+          <option>Moisturisers</option>
+          <option>Routines</option>
+          <option>Reviews</option>
+          <option>Ingredients</option>
+          <option>Lifestyle</option>
+        </select>
+        <input id="post-cat-custom" type="text" placeholder="Or type a custom category" style="width:100%;margin-top:.5rem;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.875rem;background:var(--bg);color:var(--fg);outline:none;">
+      </div>
+
+      <!-- Image -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;">
+        <label for="post-img" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:.5rem;">Cover image URL</label>
+        <input id="post-img" type="url" placeholder="https://images.unsplash.com/…" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.85rem;background:var(--bg);color:var(--fg);outline:none;" oninput="previewImg()">
+        <div id="img-preview" style="margin-top:.75rem;display:none;">
+          <img id="img-preview-el" src="" alt="Preview" style="width:100%;border-radius:.5rem;aspect-ratio:4/3;object-fit:cover;">
+        </div>
+        <input id="post-img-alt" type="text" placeholder="Image alt text" style="width:100%;margin-top:.5rem;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.85rem;background:var(--bg);color:var(--fg);outline:none;">
+      </div>
+
+      <!-- Slug & meta -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;">
+        <label for="post-slug" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:.5rem;">URL slug</label>
+        <input id="post-slug" type="text" placeholder="my-post-title" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.85rem;background:var(--bg);color:var(--fg);outline:none;font-family:monospace;">
+        <label for="post-date" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-top:.75rem;margin-bottom:.5rem;">Date</label>
+        <input id="post-date" type="date" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.875rem;background:var(--bg);color:var(--fg);outline:none;">
+        <label for="post-readtime" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-top:.75rem;margin-bottom:.5rem;">Read time</label>
+        <input id="post-readtime" type="text" placeholder="5 min read" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .75rem;font-family:var(--sans);font-size:.875rem;background:var(--bg);color:var(--fg);outline:none;">
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="bb-toast"></div>
+
+  <script>
+    if (sessionStorage.getItem('bb_admin') !== 'true') window.location.href = 'index.html';
+
+    function logout() { sessionStorage.removeItem('bb_admin'); window.location.href = 'index.html'; }
+
+    // Set today's date as default
+    document.getElementById('post-date').value = new Date().toISOString().split('T')[0];
+
+    // Check if editing existing post
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('id');
+    let editingPost = null;
+
+    if (editId) {
+      editingPost = BB.getPosts().find(p => p.id === editId);
+      if (editingPost) {
+        document.getElementById('mode-label').textContent = 'Edit post';
+        document.getElementById('post-title').value = editingPost.title;
+        document.getElementById('editor-content').innerHTML = editingPost.content || '';
+        document.getElementById('post-excerpt').value = editingPost.excerpt || '';
+        document.getElementById('post-slug').value = editingPost.slug;
+        document.getElementById('post-date').value = editingPost.date;
+        document.getElementById('post-readtime').value = editingPost.readTime || '';
+        document.getElementById('post-img').value = editingPost.image || '';
+        document.getElementById('post-img-alt').value = editingPost.imageAlt || '';
+        if (editingPost.image) previewImg();
+        // Set category
+        const catSelect = document.getElementById('post-cat');
+        let found = false;
+        for (let opt of catSelect.options) {
+          if (opt.value === editingPost.category) { opt.selected = true; found = true; break; }
+        }
+        if (!found && editingPost.category) {
+          document.getElementById('post-cat-custom').value = editingPost.category;
+        }
+      }
+    }
+
+    function fmt(cmd) { document.execCommand(cmd, false, null); document.getElementById('editor-content').focus(); }
+
+    function fmtBlock(tag) {
+      document.execCommand('formatBlock', false, tag);
+      document.getElementById('editor-content').focus();
+    }
+
+    function insertLink() {
+      const url = prompt('Enter URL:');
+      if (url) { document.execCommand('createLink', false, url); }
+      document.getElementById('editor-content').focus();
+    }
+
+    function autoSlug() {
+      if (editingPost) return; // Don't auto-overwrite slug when editing
+      const title = document.getElementById('post-title').value;
+      document.getElementById('post-slug').value = BB.slugify(title);
+    }
+
+    function previewImg() {
+      const url = document.getElementById('post-img').value.trim();
+      const wrap = document.getElementById('img-preview');
+      const el = document.getElementById('img-preview-el');
+      if (url) { el.src = url; wrap.style.display = 'block'; }
+      else { wrap.style.display = 'none'; }
+    }
+
+    function getCategory() {
+      const custom = document.getElementById('post-cat-custom').value.trim();
+      const selected = document.getElementById('post-cat').value;
+      return custom || selected || '';
+    }
+
+    function savePost(publish) {
+      const title = document.getElementById('post-title').value.trim();
+      const content = document.getElementById('editor-content').innerHTML.trim();
+      const slug = document.getElementById('post-slug').value.trim() || BB.slugify(title);
+
+      if (!title) { showToast('Post needs a title', 'error'); return; }
+      if (!content || content === '') { showToast('Post needs some content', 'error'); return; }
+
+      const posts = BB.getPosts();
+
+      // Check slug uniqueness (excluding current post if editing)
+      const existing = posts.find(p => p.slug === slug && p.id !== (editingPost?.id));
+      const finalSlug = existing ? slug + '-' + Date.now() : slug;
+
+      const postData = {
+        id: editingPost?.id || 'post-' + Date.now(),
+        slug: finalSlug,
+        title,
+        content,
+        excerpt: document.getElementById('post-excerpt').value.trim(),
+        category: getCategory(),
+        date: document.getElementById('post-date').value || new Date().toISOString().split('T')[0],
+        readTime: document.getElementById('post-readtime').value.trim(),
+        image: document.getElementById('post-img').value.trim(),
+        imageAlt: document.getElementById('post-img-alt').value.trim(),
+        published: publish
+      };
+
+      if (editingPost) {
+        const idx = posts.findIndex(p => p.id === editingPost.id);
+        if (idx !== -1) posts[idx] = postData;
+      } else {
+        posts.unshift(postData);
+      }
+
+      BB.savePosts(posts);
+      showToast(publish ? 'Post published ✓' : 'Draft saved ✓', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 1200);
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('bb-toast');
+      t.textContent = msg;
+      t.className = `toast ${type ? 'toast--' + type : ''}`;
+      requestAnimationFrame(() => t.classList.add('show'));
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>

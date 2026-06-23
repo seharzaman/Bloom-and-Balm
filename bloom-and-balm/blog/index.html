@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviews — Bloom &amp; Balm</title>
+  <meta name="description" content="All skincare reviews from Bloom &amp; Balm — SPF, Korean beauty, moisturisers, and routines for Australian skin.">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="apple-touch-icon" href="../favicon.png">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../site.js"></script>
+  <script src="../components.js"></script>
+</head>
+<body class="page-wrap">
+
+  <div id="nav-mount"></div>
+
+  <main>
+    <div class="blog-header">
+      <div class="container">
+        <span class="hero__eyebrow">All reviews</span>
+        <h1 class="blog-header__title">The <em>journal</em></h1>
+        <p class="blog-header__sub">Every review, test, and routine — honestly written.</p>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="section--sm" style="border-bottom:1px solid var(--border);">
+      <div class="container">
+        <div id="filter-bar" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="post-grid" id="posts-grid">
+          <p style="color:var(--muted);font-size:.9rem;">Loading…</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="footer-mount"></div>
+
+  <script>
+    document.getElementById('nav-mount').innerHTML = renderNav('reviews');
+    document.getElementById('footer-mount').innerHTML = renderFooter();
+
+    const allPosts = BB.getPublishedPosts();
+    let activeFilter = 'all';
+
+    // Build category filter pills
+    const cats = ['All', ...new Set(allPosts.map(p => p.category).filter(Boolean))];
+    const filterBar = document.getElementById('filter-bar');
+    filterBar.innerHTML = cats.map(c => `
+      <button
+        class="btn btn--sm btn--outline filter-pill"
+        data-cat="${c}"
+        style="${c === 'All' ? 'background:var(--blush);color:#fff;border-color:var(--blush)' : ''}"
+        onclick="setFilter('${c}')"
+      >${c}</button>
+    `).join('');
+
+    function setFilter(cat) {
+      activeFilter = cat;
+      document.querySelectorAll('.filter-pill').forEach(b => {
+        const active = b.dataset.cat === cat;
+        b.style.cssText = active ? 'background:var(--blush);color:#fff;border-color:var(--blush)' : '';
+      });
+      const filtered = cat === 'All' ? allPosts : allPosts.filter(p => p.category === cat);
+      renderPosts(filtered);
+    }
+
+    function renderPosts(posts) {
+      const grid = document.getElementById('posts-grid');
+      if (posts.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <p>No posts in this category yet.</p>
+            <a href="#" class="btn btn--outline btn--sm" onclick="setFilter('All');return false">View all</a>
+          </div>`;
+      } else {
+        grid.innerHTML = posts.map(renderPostCard).join('');
+      }
+    }
+
+    renderPosts(allPosts);
+  </script>
+</body>
+</html>

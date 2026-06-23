@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Bloom &amp; Balm Admin</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="apple-touch-icon" href="../favicon.png">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../site.js"></script>
+</head>
+<body class="admin-body">
+
+  <!-- Topbar -->
+  <div class="admin-topbar">
+    <div class="admin-topbar__logo"><span>Bloom</span> &amp; Balm <span style="font-family:var(--sans);font-size:.75rem;color:rgba(255,255,255,.5);margin-left:.5rem;">Admin</span></div>
+    <div class="admin-topbar__right">
+      <a href="write.html">✏️ New post</a>
+      <a href="../index.html" target="_blank">View site ↗</a>
+      <a href="#" onclick="logout()">Sign out</a>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="admin-main">
+
+    <!-- Stats -->
+    <div class="admin-cards" id="stats-cards"></div>
+
+    <!-- Posts table -->
+    <div class="admin-table-wrap">
+      <div class="admin-table-header">
+        <h2>All posts</h2>
+        <a href="write.html" class="btn btn--primary btn--sm">+ New post</a>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="posts-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="admin-table-wrap" style="margin-top:1.5rem;">
+      <div class="admin-table-header"><h2>Settings</h2></div>
+      <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem;max-width:420px;">
+        <div class="form-group">
+          <label>Change admin password</label>
+          <input type="password" id="new-pw" class="form-group input" placeholder="New password" style="margin-top:.35rem;">
+        </div>
+        <div>
+          <button class="btn btn--primary btn--sm" onclick="changePw()">Update password</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="bb-toast"></div>
+
+  <script>
+    // Auth guard
+    if (sessionStorage.getItem('bb_admin') !== 'true') window.location.href = 'index.html';
+
+    function logout() {
+      sessionStorage.removeItem('bb_admin');
+      window.location.href = 'index.html';
+    }
+
+    function renderDashboard() {
+      const posts = BB.getPosts();
+      const published = posts.filter(p => p.published);
+      const drafts = posts.filter(p => !p.published);
+      const cats = new Set(posts.map(p => p.category).filter(Boolean));
+
+      // Stats
+      document.getElementById('stats-cards').innerHTML = [
+        { num: posts.length, label: 'Total posts' },
+        { num: published.length, label: 'Published' },
+        { num: drafts.length, label: 'Drafts' },
+        { num: cats.size, label: 'Categories' }
+      ].map(s => `<div class="admin-card"><div class="admin-card__num">${s.num}</div><div class="admin-card__label">${s.label}</div></div>`).join('');
+
+      // Table
+      const sorted = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date));
+      document.getElementById('posts-tbody').innerHTML = sorted.length === 0
+        ? `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">No posts yet. <a href="write.html" style="color:var(--rose)">Write your first post →</a></td></tr>`
+        : sorted.map(p => `
+          <tr>
+            <td class="title-cell">${p.title}</td>
+            <td>${p.category || '—'}</td>
+            <td style="white-space:nowrap">${BB.formatDate(p.date)}</td>
+            <td><span class="status-badge ${p.published ? 'status-badge--pub' : 'status-badge--draft'}">${p.published ? 'Published' : 'Draft'}</span></td>
+            <td style="white-space:nowrap">
+              <button class="admin-action" onclick="editPost('${p.id}')">Edit</button>
+              <button class="admin-action" onclick="togglePublish('${p.id}')">${p.published ? 'Unpublish' : 'Publish'}</button>
+              <button class="admin-action admin-action--danger" onclick="deletePost('${p.id}')">Delete</button>
+            </td>
+          </tr>`).join('');
+    }
+
+    function editPost(id) {
+      window.location.href = `write.html?id=${id}`;
+    }
+
+    function togglePublish(id) {
+      const posts = BB.getPosts();
+      const post = posts.find(p => p.id === id);
+      if (!post) return;
+      post.published = !post.published;
+      BB.savePosts(posts);
+      showToast(`Post ${post.published ? 'published' : 'unpublished'}`, 'success');
+      renderDashboard();
+    }
+
+    function deletePost(id) {
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+      const posts = BB.getPosts().filter(p => p.id !== id);
+      BB.savePosts(posts);
+      showToast('Post deleted', 'error');
+      renderDashboard();
+    }
+
+    function changePw() {
+      const val = document.getElementById('new-pw').value.trim();
+      if (!val || val.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+      localStorage.setItem('bb_admin_pw', val);
+      document.getElementById('new-pw').value = '';
+      showToast('Password updated ✓', 'success');
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.getElementById('bb-toast');
+      t.textContent = msg;
+      t.className = `toast ${type ? 'toast--' + type : ''}`;
+      requestAnimationFrame(() => t.classList.add('show'));
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    renderDashboard();
+  </script>
+</body>
+</html>

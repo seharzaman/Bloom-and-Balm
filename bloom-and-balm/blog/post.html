@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloom &amp; Balm</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="apple-touch-icon" href="../favicon.png">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../site.js"></script>
+  <script src="../components.js"></script>
+</head>
+<body class="page-wrap">
+
+  <div id="nav-mount"></div>
+  <main id="main-content"></main>
+  <div id="footer-mount"></div>
+
+  <script>
+    document.getElementById('nav-mount').innerHTML = renderNav('reviews');
+    document.getElementById('footer-mount').innerHTML = renderFooter();
+
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+    const main = document.getElementById('main-content');
+
+    if (!slug) {
+      main.innerHTML = '<div style="padding:5rem 0;text-align:center;"><h1 style="font-family:var(--serif)">Post not found</h1><a href="index.html" style="color:var(--rose)">← Back to reviews</a></div>';
+    } else {
+      const post = BB.getPostBySlug(slug);
+      if (!post) {
+        main.innerHTML = `<div style="padding:5rem 0;text-align:center;"><h1 style="font-family:var(--serif)">Post not found</h1><p style="color:var(--muted);margin:1rem 0">The post you're looking for doesn't exist or may have been moved.</p><a href="index.html" style="color:var(--rose)">← Back to reviews</a></div>`;
+      } else {
+        // Update page title & meta
+        document.title = `${post.title} — Bloom & Balm`;
+        document.querySelector('meta[name="description"]') && (document.querySelector('meta[name="description"]').content = post.excerpt || '');
+
+        const heroImg = post.image
+          ? `<img class="post-hero__img" src="${post.image}" alt="${post.imageAlt || post.title}" loading="lazy">`
+          : '';
+
+        main.innerHTML = `
+          <div class="post-hero">
+            <div class="container--narrow">
+              <a href="index.html" class="back-link">← Back to reviews</a>
+              ${post.category ? `<span class="post-hero__cat">${post.category}</span>` : ''}
+              <h1 class="post-hero__title">${post.title}</h1>
+              <div class="post-hero__meta">
+                <span>${BB.formatDate(post.date)}</span>
+                ${post.readTime ? `<span>${post.readTime}</span>` : ''}
+              </div>
+              ${heroImg}
+            </div>
+          </div>
+          <div class="post-body">
+            <div class="container--narrow">
+              <div class="post-body">${post.content}</div>
+              <hr class="divider">
+              <p style="font-size:.85rem;color:var(--muted)">This post may contain affiliate links. <a href="../affiliate-disclosure.html">Read my disclosure policy.</a></p>
+            </div>
+          </div>
+
+          <!-- Related posts -->
+          <section class="section" style="padding-top:0">
+            <div class="container">
+              <h2 class="section__title" style="margin-bottom:2rem">More reviews</h2>
+              <div class="post-grid" id="related-grid"></div>
+            </div>
+          </section>
+        `;
+
+        // Related posts (same category, excluding current)
+        const related = BB.getPublishedPosts()
+          .filter(p => p.slug !== slug)
+          .filter(p => !post.category || p.category === post.category)
+          .slice(0, 3);
+        const fallback = related.length < 3
+          ? BB.getPublishedPosts().filter(p => p.slug !== slug && !related.find(r => r.slug === p.slug)).slice(0, 3 - related.length)
+          : [];
+        const relatedGrid = document.getElementById('related-grid');
+        const all = [...related, ...fallback].slice(0, 3);
+        relatedGrid.innerHTML = all.length > 0 ? all.map(renderPostCard).join('') : '';
+      }
+    }
+  </script>
+</body>
+</html>

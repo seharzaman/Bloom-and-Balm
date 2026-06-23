@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Bloom &amp; Balm</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="apple-touch-icon" href="../favicon.png">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../site.js"></script>
+</head>
+<body class="admin-body">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-box__logo"><span>Bloom</span> &amp; Balm</div>
+      <p class="login-box__sub">Admin panel — sign in to continue</p>
+      <div class="login-box__error" id="error-msg">Incorrect password. Try again.</div>
+      <form onsubmit="handleLogin(event)">
+        <input class="login-input" type="password" id="pw" placeholder="Password" required autocomplete="current-password">
+        <button type="submit" class="login-btn">Sign in</button>
+      </form>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:1.5rem;">
+        Default password: <code>bloombalm2024</code><br>
+        Change it in admin settings after first login.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    if (sessionStorage.getItem('bb_admin') === 'true') {
+      window.location.href = 'dashboard.html';
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const pw = document.getElementById('pw').value;
+      const stored = localStorage.getItem('bb_admin_pw') || 'bloombalm2024';
+      if (pw === stored) {
+        sessionStorage.setItem('bb_admin', 'true');
+        window.location.href = 'dashboard.html';
+      } else {
+        document.getElementById('error-msg').classList.add('show');
+        document.getElementById('pw').value = '';
+        document.getElementById('pw').focus();
+      }
+    }
+  </script>
+</body>
+</html>

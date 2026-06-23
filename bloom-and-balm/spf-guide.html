@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPF &amp; Sun Protection — Bloom &amp; Balm</title>
+  <meta name="description" content="Sunscreen reviews and SPF guides built for Australian UV. The good, the sticky, and the genuinely wearable.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js"></script>
+  <script src="components.js"></script>
+</head>
+<body class="page-wrap">
+  <div id="nav-mount"></div>
+  <main>
+    <div class="cat-header">
+      <div class="container">
+        <span class="cat-header__eyebrow">Category</span>
+        <h1 class="cat-header__title">SPF &amp; Sun Protection</h1>
+        <p class="cat-header__sub">Sunscreen reviews and SPF guides built for Australian UV. The good, the sticky, and the genuinely wearable.</p>
+      </div>
+    </div>
+    <section class="section">
+      <div class="container">
+        <div class="post-grid" id="posts-grid"></div>
+      </div>
+    </section>
+  </main>
+  <div id="footer-mount"></div>
+  <script>
+    document.getElementById('nav-mount').innerHTML = renderNav('spf');
+    document.getElementById('footer-mount').innerHTML = renderFooter();
+    const posts = BB.getPostsByCategory('SPF');
+    const grid = document.getElementById('posts-grid');
+    grid.innerHTML = posts.length > 0
+      ? posts.map(renderPostCard).join('')
+      : `<div class="empty-state" style="grid-column:1/-1"><p>No SPF posts yet — browse all reviews.</p><a href="blog/index.html" class="btn btn--outline btn--sm">View all reviews</a></div>`;
+  </script>
+</body>
+</html>
